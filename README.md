@@ -27,7 +27,7 @@ line3
 
 ## Syntax
 
-* any JSON Syntax
+* any [JSON Syntax](https://www.json.org/)
 * multi-line-string
     * '"' '"' guard-string '\n' raw-string '\n' guard-string '\n'
         * former guard-sting and later one MUST be same sequence of characters
