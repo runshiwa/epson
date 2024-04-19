@@ -4,7 +4,7 @@ import sys
 from . import common
 from . import utility
 
-def process_content(json_content, writer=print, writer_kwarg=None):
+def process_content(json_content, writer=print, writer_kwarg=None, line_threshold=common.JSON_STRING_LINE_THRESHOLD):
     if writer_kwarg is None:
         if writer == print:
             writer_kwarg = dict(end="")
@@ -16,7 +16,7 @@ def process_content(json_content, writer=print, writer_kwarg=None):
         json_string = match.string[match.start():match.end()]
         python_string = json.loads(json_string)
         line = python_string.split("\n")
-        if 1 < len(line):
+        if line_threshold < len(line):
             guard = common.EPSON_STRING_GUARD
             while guard in line:
                 guard = utility.random_string()
@@ -27,10 +27,10 @@ def process_content(json_content, writer=print, writer_kwarg=None):
         last = match.end()
     writer(json_content[last:], **writer_kwarg)
 
-def process_file(json_file, stdin="-"):
+def process_file(json_file, stdin="-", line_threshold=common.JSON_STRING_LINE_THRESHOLD):
     with open(json_file, newline="") if json_file != stdin else sys.stdin as jf:
         json_content = jf.read()
-        process_content(json_content)
+        process_content(json_content, line_threshold=line_threshold)
 
 def main():
     if len(sys.argv) < 2:
