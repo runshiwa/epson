@@ -25,6 +25,10 @@ line3
 }
 ```
 
+in above example, period character (.) is guard-string.
+
+And if you carefully choose guard-string, you will put raw-binary data as string.
+
 ## Syntax
 
 * any [JSON Syntax](https://www.json.org/)
