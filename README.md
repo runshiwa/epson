@@ -1,6 +1,20 @@
 # Extended Plain String Object Notation
 
-## Example
+## Usage
+
+### Convert from JSON file
+
+```
+$ python -m epson.json2epson <json_file >epson_file
+```
+
+### Convert to JSON file
+
+```
+$ python -m epson.epson2json <epson_file >json_file
+```
+
+## Notation Example
 
 ### JSON multi-line string
 
@@ -12,7 +26,7 @@
 
 ### EPSON multi-line string
 
-like a shell-script's here-document...
+Like a shell-script's here-document...
 
 ```
 {
@@ -25,7 +39,7 @@ line3
 }
 ```
 
-in above example, period character (.) is guard-string.
+In above example, period character (.) is guard-string.
 
 And if you carefully choose guard-string, you will put raw-binary data as string.
 
@@ -35,7 +49,7 @@ And if you carefully choose guard-string, you will put raw-binary data as string
 * multi-line-string
     * '"' '"' guard-string '\n' raw-string '\n' guard-string '\n'
         * former guard-sting and later one MUST be same sequence of characters
-        * line-feed characters (\n) around raw-string are exclusive of raw-string
+        * line-feed characters (\n) around raw-string are exclusive of raw-string self
 * guard-string
     * characters
 * raw-string
