@@ -39,4 +39,8 @@ def main():
         process_file(json_file)
 
 if __name__ == "__main__":
+    import io
+    sys.stdin = io.TextIOWrapper(sys.stdin.buffer, newline='')
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, newline='')
+
     main()
