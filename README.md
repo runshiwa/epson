@@ -46,7 +46,7 @@ After writing the cause of death, details of the death should be written in the 
 }
 ```
 
-In above example, period character (.) is guard-string.
+In above example, single period character (.) only in the line is guard-string.
 
 And if you carefully choose guard-string, you will put raw-binary data as string.
 
