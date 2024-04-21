@@ -1,17 +1,23 @@
 # Extended Plain String Object Notation
 
+## Setup
+
+```
+$ pip install .
+```
+
 ## Usage
 
 ### Convert from JSON file
 
 ```
-$ python -m epson.json2epson <json_file >epson_file
+$ json2epson <json_file >epson_file
 ```
 
 ### Convert to JSON file
 
 ```
-$ python -m epson.epson2json <epson_file >json_file
+$ epson2json <epson_file >json_file
 ```
 
 ## Notation Example
