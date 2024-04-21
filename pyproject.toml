@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "epson"
+description = "Extended Plain String Object Notation"
+dynamic = ["version"]   # don't work -> [tool.setuptools.dynamic]version
+authors = [
+    { name = "Nobuyuki Shimazu", email = "nobuyuki@a.email.ne.jp" },
+]
+readme = "README.md"
+license = { text = "GPL-3.0-or-later" }
+
+[project.scripts]
+json2epson = "epson.json2epson:main"
+epson2json = "epson.epson2json:main"
+
+[project.urls]
+homepage = "https://github.com/runshiwa/epson"
+repository = "https://github.com/runshiwa/epson.git"
+
+[tool.setuptools.dynamic]
+version = {attr = "epson.__version__"}
