@@ -102,13 +102,14 @@ def object2json(o, *arg, **kwarg):
     return json.dumps(o, *arg, **kwarg)
 
 
-def process_content(dom, strip=True, simplify=True, simplify2=False, writer=print, writer_kwarg=None):
+def process_content(xml_content, strip=True, simplify=True, simplify2=False, writer=print, writer_kwarg=None):
     if writer_kwarg is None:
         if writer == print:
             writer_kwarg = dict(end="")
         else:
             writer_kwarg = {}
 
+    dom = xml2dom(xml_content)
     o = dom2object(dom, strip, simplify, simplify2)
     json_content = object2json(o, **common.JSON_DUMP_KWARG)
     writer(json_content, **writer_kwarg)
@@ -117,10 +118,10 @@ def process_content(dom, strip=True, simplify=True, simplify2=False, writer=prin
 def process_file(xml_file, stdin="-"):
     if xml_file != stdin:
         with open(xml_file, newline="") as xf:
-            dom = xml2dom(xf.read())
+            xml_content = xf.read()
     else:
-        dom = xml2dom(sys.stdin.read())
-    process_content(dom)
+        xml_content = sys.stdin.read()
+    process_content(xml_content)
 
 
 def main():
