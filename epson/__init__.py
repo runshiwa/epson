@@ -3,3 +3,4 @@ __version__ = "0.1"
 
 from . import json2epson
 from . import epson2json
+from . import xml2json

@@ -15,6 +15,7 @@ license = { text = "GPL-3.0-or-later" }
 [project.scripts]
 json2epson = "epson.json2epson:main"
 epson2json = "epson.epson2json:main"
+xml2json = "epson.xml2json:main"
 
 [project.urls]
 homepage = "https://github.com/runshiwa/epson"
