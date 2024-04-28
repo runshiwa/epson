@@ -4,6 +4,7 @@ import json
 import sys
 
 from . import common
+from . import utility
 
 ATTRIBUTE = "attribute"
 TEXT = "text"
@@ -45,31 +46,7 @@ def simplify_element(element):
     return element
 
 
-def simplify_object(obj):
-    if isinstance(obj, dict):
-        obj = {
-            key: item
-            for key, item in obj.items()
-            if item
-        }
-        if len(obj) == 1:
-            obj = obj.popitem()[1]
-        elif len(obj) == 0:
-            obj = None
-    elif isinstance(obj, list):
-        obj = [
-            item
-            for item in obj
-            if item
-        ]
-        if len(obj) == 1:
-            obj = obj[0]
-        elif len(obj) == 0:
-            obj = None
-    return obj
-
-
-def etdom2object(element, strip=True, simplify=True, simplify2=False):
+def etdom2object(element, remove_indent=True, strip=True, simplify=True, simplify2=False):
     # element is object with tag name
     element_object = {}
     # element has attributes, text, child(ren), tail as list
@@ -87,29 +64,32 @@ def etdom2object(element, strip=True, simplify=True, simplify2=False):
     element_object[element.tag][CHILDREN] = []
     for child in element:
         element_object[element.tag][CHILDREN] += [
-            etdom2object(child, strip, simplify, simplify2)]
+            etdom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)]
 
     # append element tail
     element_object[element.tag][TAIL] = element.tail
 
-    if strip:
-        if element_object[element.tag][TEXT] is not None:
+    if element_object[element.tag][TEXT] is not None:
+        if remove_indent:
+            element_object[element.tag][TEXT] = utility.remove_indent(element_object[element.tag][TEXT])
+        if strip:
             element_object[element.tag][TEXT] = element_object[element.tag][TEXT].strip()
-            if len(element_object[element.tag][TEXT]) == 0:
-                element_object[element.tag][TEXT] = None
-        if element_object[element.tag][TAIL] is not None:
+    if element_object[element.tag][TAIL] is not None:
+        if remove_indent:
+            element_object[element.tag][TAIL] = utility.remove_indent(element_object[element.tag][TAIL])
+        if strip:
             element_object[element.tag][TAIL] = element_object[element.tag][TAIL].strip()
-            if len(element_object[element.tag][TAIL]) == 0:
-                element_object[element.tag][TAIL] = None
     if simplify:
-        element_object[element.tag] = simplify_etelement(element_object[element.tag])
+        element_object[element.tag] = simplify_etelement(
+            element_object[element.tag])
     if simplify2:
-        element_object[element.tag] = simplify_object(element_object[element.tag])
+        element_object[element.tag] = utility.simplify_object(
+            element_object[element.tag])
 
     return element_object
 
 
-def dom2object(element, strip=True, simplify=True, simplify2=False):
+def dom2object(element, remove_indent=True, strip=True, simplify=True, simplify2=False):
     # element is object with tag name
     element_object = {}
     # element has attributes, text, child(ren)
@@ -129,17 +109,19 @@ def dom2object(element, strip=True, simplify=True, simplify2=False):
     for child in element.childNodes:
         if child.nodeType == xml.dom.Node.ELEMENT_NODE:
             element_object[element.tagName][CHILDREN] += [
-                dom2object(child, strip, simplify, simplify2)]
+                dom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)]
 
-    if strip:
-        if element_object[element.tagName][TEXT] is not None:
+    if element_object[element.tagName][TEXT] is not None:
+        if remove_indent:
+            element_object[element.tagName][TEXT] = utility.remove_indent(element_object[element.tagName][TEXT])
+        if strip:
             element_object[element.tagName][TEXT] = element_object[element.tagName][TEXT].strip()
-            if len(element_object[element.tagName][TEXT]) == 0:
-                element_object[element.tagName][TEXT] = None
     if simplify:
-        element_object[element.tagName] = simplify_element(element_object[element.tagName])
+        element_object[element.tagName] = simplify_element(
+            element_object[element.tagName])
     if simplify2:
-        element_object[element.tagName] = simplify_object(element_object[element.tagName])
+        element_object[element.tagName] = utility.simplify_object(
+            element_object[element.tagName])
 
     return element_object
 
@@ -148,7 +130,7 @@ def object2json(o, *arg, **kwarg):
     return json.dumps(o, *arg, **kwarg)
 
 
-def process_content(xml_content, strip=True, simplify=True, simplify2=True, writer=print, writer_kwarg=None):
+def process_content(xml_content, remove_indent=True, strip=True, simplify=True, simplify2=True, writer=print, writer_kwarg=None):
     if writer_kwarg is None:
         if writer == print:
             writer_kwarg = dict(end="")
@@ -157,10 +139,12 @@ def process_content(xml_content, strip=True, simplify=True, simplify2=True, writ
 
     if False:
         dom = xml2etdom(xml_content)
-        o = etdom2object(dom, strip, simplify, simplify2)
+        o = etdom2object(dom, remove_indent=remove_indent,
+                       strip=strip, simplify=simplify, simplify2=simplify2)
     else:
         dom = xml2dom(xml_content)
-        o = dom2object(dom.documentElement, strip, simplify, simplify2)
+        o = dom2object(dom.documentElement, remove_indent=remove_indent,
+                       strip=strip, simplify=simplify, simplify2=simplify2)
     json_content = object2json(o, **common.JSON_DUMP_KWARG)
     writer(json_content, **writer_kwarg)
 
