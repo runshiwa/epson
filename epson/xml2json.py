@@ -53,7 +53,7 @@ def simplify_object(obj):
             if item
         }
         if len(obj) == 1:
-            obj =  obj.popitem()[1]
+            obj = obj.popitem()[1]
         elif len(obj) == 0:
             obj = None
     elif isinstance(obj, list):
