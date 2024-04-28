@@ -1,4 +1,5 @@
 import xml.etree.ElementTree
+import xml.dom.minidom
 import json
 import sys
 
@@ -7,14 +8,18 @@ from . import common
 ATTRIBUTE = "attribute"
 TEXT = "text"
 CHILDREN = "children"
-TAIL = "tail"
+TAIL = "tail"   # ElementTree only
 
 
-def xml2dom(xml_string, *arg, **kwarg):
+def xml2etdom(xml_string, *arg, **kwarg):
     return xml.etree.ElementTree.fromstring(xml_string, *arg, **kwarg)
 
 
-def simplify_element(element):
+def xml2dom(xml_string, *arg, **kwarg):
+    return xml.dom.minidom.parseString(xml_string, *arg, **kwarg)
+
+
+def simplify_etelement(element):
     if len(element[ATTRIBUTE]) == 0:
         del element[ATTRIBUTE]
     if len(element[CHILDREN]):
@@ -28,46 +33,52 @@ def simplify_element(element):
     return element
 
 
-def simplify_object(o):
-    tag = next(iter(o))
-    if isinstance(o[tag], dict):
-        for key in o[tag].copy():
-            if o[tag][key] is None or len(o[tag][key]) == 0:
-                del o[tag][key]
-        if len(o[tag]) == 1:
-            o[tag] = o[tag][next(iter(o[tag]))]
-        if len(o[tag]) == 0:
-            o[tag] = None
-    if isinstance(o[tag], list):
-        candidate = []
-        for index, item in enumerate(o[tag]):
-            if item is None or len(item) == 0:
-                candidate += [index]
-        for index in reversed(candidate):
-            del o[tag][index]
-        if len(o[tag]) == 1:
-            o[tag] = o[tag][0]
-        if len(o[tag]) == 0:
-            o[tag] = None
-    if o[tag] is None:
-        del o[tag]
-    if len(o) == 1:
-        o = o[next(iter(o))]
-    if o is not None and len(o) == 0:
-        o = None
-    return o
+def simplify_element(element):
+    if len(element[ATTRIBUTE]) == 0:
+        del element[ATTRIBUTE]
+    if len(element[CHILDREN]):
+        del element[TEXT]
+    else:
+        if element[TEXT] is None:
+            del element[TEXT]
+        del element[CHILDREN]
+    return element
 
 
-def dom2object(element, strip=True, simplify=True, simplify2=False):
+def simplify_object(obj):
+    if isinstance(obj, dict):
+        obj = {
+            key: item
+            for key, item in obj.items()
+            if item
+        }
+        if len(obj) == 1:
+            return obj.popitem()[1]
+        elif len(obj) == 0:
+            return None
+    elif isinstance(obj, list):
+        obj = [
+            item
+            for item in obj
+            if item
+        ]
+        if len(obj) == 1:
+            return obj[0]
+        elif len(obj) == 0:
+            return None
+    return obj
+
+
+def etdom2object(element, strip=True, simplify=True, simplify2=False):
     # element is object with tag name
     o = {}
-    # element has 0: attributes, 1: text, 2: child(ren), 3: tail as list
+    # element has attributes, text, child(ren), tail as list
     o[element.tag] = {}
 
     # append element attributes
     o[element.tag][ATTRIBUTE] = {}
-    for attrib in element.attrib:
-        o[element.tag][ATTRIBUTE][attrib] = element.attrib[attrib]
+    for attribute in element.attrib:
+        o[element.tag][ATTRIBUTE][attribute] = element.attrib[attribute]
 
     # append element text
     o[element.tag][TEXT] = element.text
@@ -76,7 +87,7 @@ def dom2object(element, strip=True, simplify=True, simplify2=False):
     o[element.tag][CHILDREN] = []
     for child in element:
         o[element.tag][CHILDREN] += [
-            dom2object(child, strip, simplify, simplify2)]
+            etdom2object(child, strip, simplify, simplify2)]
 
     # append element tail
     o[element.tag][TAIL] = element.tail
@@ -91,9 +102,44 @@ def dom2object(element, strip=True, simplify=True, simplify2=False):
             if len(o[element.tag][TAIL]) == 0:
                 o[element.tag][TAIL] = None
     if simplify:
-        o[element.tag] = simplify_element(o[element.tag])
+        o[element.tag] = simplify_etelement(o[element.tag])
     if simplify2:
-        o = simplify_object(o)
+        o[element.tag] = simplify_object(o[element.tag])
+
+    return o
+
+
+def dom2object(element, strip=True, simplify=True, simplify2=False):
+    # element is object with tag name
+    o = {}
+    # element has attributes, text, child(ren)
+    o[element.tagName] = {}
+
+    # append element attributes
+    o[element.tagName][ATTRIBUTE] = {}
+    for attribute in element.attributes if element.attributes else {}:
+        o[element.tagName][ATTRIBUTE][attribute.name] = attribute.value
+
+    # append element text
+    o[element.tagName][TEXT] = "".join(
+        child.data for child in element.childNodes if child.nodeType == xml.dom.Node.TEXT_NODE)
+
+    # append element child(ren)
+    o[element.tagName][CHILDREN] = []
+    for child in element.childNodes:
+        if child.nodeType == xml.dom.Node.ELEMENT_NODE:
+            o[element.tagName][CHILDREN] += [
+                dom2object(child, strip, simplify, simplify2)]
+
+    if strip:
+        if o[element.tagName][TEXT] is not None:
+            o[element.tagName][TEXT] = o[element.tagName][TEXT].strip()
+            if len(o[element.tagName][TEXT]) == 0:
+                o[element.tagName][TEXT] = None
+    if simplify:
+        o[element.tagName] = simplify_element(o[element.tagName])
+    if simplify2:
+        o[element.tagName] = simplify_object(o[element.tagName])
 
     return o
 
@@ -102,15 +148,19 @@ def object2json(o, *arg, **kwarg):
     return json.dumps(o, *arg, **kwarg)
 
 
-def process_content(xml_content, strip=True, simplify=True, simplify2=False, writer=print, writer_kwarg=None):
+def process_content(xml_content, strip=True, simplify=True, simplify2=True, writer=print, writer_kwarg=None):
     if writer_kwarg is None:
         if writer == print:
             writer_kwarg = dict(end="")
         else:
             writer_kwarg = {}
 
-    dom = xml2dom(xml_content)
-    o = dom2object(dom, strip, simplify, simplify2)
+    if False:
+        dom = xml2etdom(xml_content)
+        o = etdom2object(dom, strip, simplify, simplify2)
+    else:
+        dom = xml2dom(xml_content)
+        o = dom2object(dom.documentElement, strip, simplify, simplify2)
     json_content = object2json(o, **common.JSON_DUMP_KWARG)
     writer(json_content, **writer_kwarg)
 
