@@ -40,9 +40,8 @@ def remove_indent(multiline_string):
     ]
     common_prefix = "".join(
         s[0]
-        for s in itertools.takewhile(lambda x: all(x[0] == c for c in x), zip(*valid_line))
+        for s in itertools.takewhile(lambda x: all(x[0].isspace() and x[0] == c for c in x), zip(*valid_line))
     )
-    common_prefix = common_prefix[:len(common_prefix) - len(common_prefix.lstrip())]
     multiline_string = "\n".join(
         line.removeprefix(common_prefix)
         for line in multiline_string.splitlines()
