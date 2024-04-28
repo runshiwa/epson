@@ -117,8 +117,8 @@ def dom2object(element, strip=True, simplify=True, simplify2=False):
 
     # append element attributes
     o[element.tagName][ATTRIBUTE] = {}
-    for attribute in element.attributes if element.attributes else {}:
-        o[element.tagName][ATTRIBUTE][attribute.name] = attribute.value
+    for attribute, value in element.attributes.items():
+        o[element.tagName][ATTRIBUTE][attribute] = value
 
     # append element text
     o[element.tagName][TEXT] = "".join(
