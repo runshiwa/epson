@@ -10,7 +10,7 @@ authors = [
     { name = "Nobuyuki Shimazu", email = "nobuyuki@a.email.ne.jp" }
 ]
 readme = "README.md"
-license = { text = "GPL-3.0-or-later" }
+license = { text = "AGPL-3.0-or-later" }
 
 [project.scripts]
 json2epson = "epson.json2epson:main"
