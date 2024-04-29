@@ -64,21 +64,18 @@ def etdom2object(element, remove_indent=True, strip=True, simplify=True, simplif
     element_object[element.tag][CHILDREN] = []
     for child in element:
         element_object[element.tag][CHILDREN] += [
-            etdom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)]
+            etdom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)
+        ]
 
     # append element tail
     element_object[element.tag][TAIL] = element.tail
 
-    if element_object[element.tag][TEXT] is not None:
-        if remove_indent:
-            element_object[element.tag][TEXT] = utility.remove_indent(element_object[element.tag][TEXT])
-        if strip:
-            element_object[element.tag][TEXT] = element_object[element.tag][TEXT].strip()
-    if element_object[element.tag][TAIL] is not None:
-        if remove_indent:
-            element_object[element.tag][TAIL] = utility.remove_indent(element_object[element.tag][TAIL])
-        if strip:
-            element_object[element.tag][TAIL] = element_object[element.tag][TAIL].strip()
+    for item in [TEXT, TAIL]:
+        if element_object[element.tag][item] is not None:
+            if remove_indent:
+                element_object[element.tag][item] = utility.remove_indent(element_object[element.tag][item])
+            if strip:
+                element_object[element.tag][item] = element_object[element.tag][item].strip()
     if simplify:
         element_object[element.tag] = simplify_etelement(
             element_object[element.tag])
@@ -102,14 +99,18 @@ def dom2object(element, remove_indent=True, strip=True, simplify=True, simplify2
 
     # append element text
     element_object[element.tagName][TEXT] = "".join(
-        child.data for child in element.childNodes if child.nodeType == xml.dom.Node.TEXT_NODE)
+        child.data
+        for child in element.childNodes
+        if child.nodeType == xml.dom.Node.TEXT_NODE
+    )
 
     # append element child(ren)
     element_object[element.tagName][CHILDREN] = []
     for child in element.childNodes:
         if child.nodeType == xml.dom.Node.ELEMENT_NODE:
             element_object[element.tagName][CHILDREN] += [
-                dom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)]
+                dom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)
+            ]
 
     if element_object[element.tagName][TEXT] is not None:
         if remove_indent:
@@ -139,12 +140,10 @@ def process_content(xml_content, remove_indent=True, strip=True, simplify=True, 
 
     if False:
         dom = xml2etdom(xml_content)
-        o = etdom2object(dom, remove_indent=remove_indent,
-                       strip=strip, simplify=simplify, simplify2=simplify2)
+        o = etdom2object(dom, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)
     else:
         dom = xml2dom(xml_content)
-        o = dom2object(dom.documentElement, remove_indent=remove_indent,
-                       strip=strip, simplify=simplify, simplify2=simplify2)
+        o = dom2object(dom.documentElement, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)
     json_content = object2json(o, **common.JSON_DUMP_KWARG)
     writer(json_content, **writer_kwarg)
 
