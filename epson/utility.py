@@ -1,10 +1,8 @@
 import random
 import itertools
 
-from . import common
 
-
-def random_string(charset=common.EPSON_STRING_GUARD_CS, length=common.EPSON_STRING_GUARD_LEN):
+def random_string(charset, length):
     return "".join(random.choices(charset, k=length))
 
 
