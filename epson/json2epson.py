@@ -19,7 +19,7 @@ def process_content(json_content, writer=print, writer_kwarg=None, line_threshol
         if line_threshold < len(line):
             guard = guard_default
             while guard in line:
-                guard = utility.random_string()
+                guard = utility.random_string(charset=common.EPSON_STRING_GUARD_CS, length=common.EPSON_STRING_GUARD_LEN)
             writer(match.string[last:match.start()], **writer_kwarg)
             writer("\n".join([common.EPSON_STRING_START + guard, python_string, guard, ""]), **writer_kwarg)
         else:
