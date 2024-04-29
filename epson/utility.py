@@ -9,9 +9,9 @@ def random_string(charset, length):
 def simplify_object(obj, recursive=False):
     if isinstance(obj, dict):
         obj = {
-            key: simplify_object(item, recursive=recursive) if recursive else item
-            for key, item in obj.items()
-            if item
+            key: simplify_object(obj[key], recursive=recursive) if recursive else obj[key]
+            for key in obj
+            if obj[key]
         }
         if len(obj) == 1:
             obj = obj.popitem()[1]
