@@ -140,4 +140,5 @@ After writing the cause of death, details of the death should be written in the 
     * ws
 
 ---
+
 [^1]: All textual samples are from DEATH NOTE.
