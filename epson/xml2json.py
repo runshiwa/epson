@@ -6,10 +6,10 @@ import sys
 from . import common
 from . import utility
 
-ATTRIBUTE = "attribute"
-TEXT = "text"
-CHILDREN = "children"
-TAIL = "tail"   # ElementTree only
+ATTRIBUTE = "_attribute"
+CHILDREN = "_children"
+TEXT = "_text"  # ElementTree only
+TAIL = "_tail"  # ElementTree only
 
 
 def xml2etdom(xml_string, *arg, **kwarg):
@@ -37,12 +37,7 @@ def simplify_etelement(element):
 def simplify_element(element):
     if len(element[ATTRIBUTE]) == 0:
         del element[ATTRIBUTE]
-    if len(element[CHILDREN]):
-        del element[TEXT]
-    else:
-        if element[TEXT] is None:
-            del element[TEXT]
-        del element[CHILDREN]
+        element = element[CHILDREN]
     return element
 
 
@@ -77,11 +72,9 @@ def etdom2object(element, remove_indent=True, strip=True, simplify=True, simplif
             if strip:
                 element_object[element.tag][item] = element_object[element.tag][item].strip()
     if simplify:
-        element_object[element.tag] = simplify_etelement(
-            element_object[element.tag])
+        element_object[element.tag] = simplify_etelement(element_object[element.tag])
     if simplify2:
-        element_object[element.tag] = utility.simplify_object(
-            element_object[element.tag])
+        element_object[element.tag] = utility.simplify_object(element_object[element.tag], 1 if simplify else 2)
 
     return element_object
 
@@ -89,20 +82,13 @@ def etdom2object(element, remove_indent=True, strip=True, simplify=True, simplif
 def dom2object(element, remove_indent=True, strip=True, simplify=True, simplify2=False):
     # element is object with tag name
     element_object = {}
-    # element has attributes, text, child(ren)
+    # element has attributes, child(ren)
     element_object[element.tagName] = {}
 
     # append element attributes
     element_object[element.tagName][ATTRIBUTE] = {}
     for attribute, value in element.attributes.items():
         element_object[element.tagName][ATTRIBUTE][attribute] = value
-
-    # append element text
-    element_object[element.tagName][TEXT] = "".join(
-        child.data
-        for child in element.childNodes
-        if child.nodeType == xml.dom.Node.TEXT_NODE
-    )
 
     # append element child(ren)
     element_object[element.tagName][CHILDREN] = []
@@ -111,18 +97,26 @@ def dom2object(element, remove_indent=True, strip=True, simplify=True, simplify2
             element_object[element.tagName][CHILDREN] += [
                 dom2object(child, remove_indent=remove_indent, strip=strip, simplify=simplify, simplify2=simplify2)
             ]
+        elif child.nodeType in {xml.dom.Node.TEXT_NODE, xml.dom.Node.CDATA_SECTION_NODE}:
+            if len(element_object[element.tagName][CHILDREN]) and isinstance(element_object[element.tagName][CHILDREN][-1], str):
+                element_object[element.tagName][CHILDREN][-1] += child.data
+            else:
+                element_object[element.tagName][CHILDREN] += [child.data]
 
-    if element_object[element.tagName][TEXT] is not None:
-        if remove_indent:
-            element_object[element.tagName][TEXT] = utility.remove_indent(element_object[element.tagName][TEXT])
-        if strip:
-            element_object[element.tagName][TEXT] = element_object[element.tagName][TEXT].strip()
+    if remove_indent:
+        element_object[element.tagName][CHILDREN] = [
+            utility.remove_indent(item) if isinstance(item, str) else item
+            for item in element_object[element.tagName][CHILDREN]
+        ]
+    if strip:
+        element_object[element.tagName][CHILDREN] = [
+            item.strip() if isinstance(item, str) else item
+            for item in element_object[element.tagName][CHILDREN]
+        ]
     if simplify:
-        element_object[element.tagName] = simplify_element(
-            element_object[element.tagName])
+        element_object[element.tagName] = simplify_element(element_object[element.tagName])
     if simplify2:
-        element_object[element.tagName] = utility.simplify_object(
-            element_object[element.tagName])
+        element_object[element.tagName] = utility.simplify_object(element_object[element.tagName], 0 if simplify else 1)
 
     return element_object
 
