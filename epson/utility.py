@@ -6,10 +6,10 @@ def random_string(charset, length):
     return "".join(random.choices(charset, k=length))
 
 
-def simplify_object(obj, recursive=False):
+def simplify_object(obj, recursive=0):
     if isinstance(obj, dict):
         obj = {
-            key: simplify_object(obj[key], recursive=recursive) if recursive else obj[key]
+            key: simplify_object(obj[key], recursive=recursive - 1) if recursive else obj[key]
             for key in obj
             if obj[key]
         }
@@ -19,7 +19,7 @@ def simplify_object(obj, recursive=False):
             obj = None
     elif isinstance(obj, list):
         obj = [
-            simplify_object(item, recursive=recursive) if recursive else item
+            simplify_object(item, recursive=recursive - 1) if recursive else item
             for item in obj
             if item
         ]
