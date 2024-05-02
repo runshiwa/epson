@@ -138,3 +138,6 @@ After writing the cause of death, details of the death should be written in the 
 * raw-character
     * character
     * ws
+
+---
+[^1]: All textual samples are from DEATH NOTE.
