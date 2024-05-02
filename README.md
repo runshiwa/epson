@@ -20,7 +20,7 @@ $ json2epson <json_file >epson_file
 $ epson2json <epson_file >json_file
 ```
 
-## Notation Example
+## Notation Example [^1]
 
 ### JSON multi-line string
 
