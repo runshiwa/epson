@@ -37,7 +37,8 @@ def simplify_etelement(element):
 def simplify_element(element):
     if len(element[ATTRIBUTE]) == 0:
         del element[ATTRIBUTE]
-        element = element[CHILDREN]
+    if len(element[CHILDREN]) == 0:
+        del element[CHILDREN]
     return element
 
 
@@ -74,7 +75,7 @@ def etdom2object(element, remove_indent=True, strip=True, simplify=True, simplif
     if simplify:
         element_object[element.tag] = simplify_etelement(element_object[element.tag])
     if simplify2:
-        element_object[element.tag] = utility.simplify_object(element_object[element.tag], 1 if simplify else 2)
+        element_object[element.tag] = utility.simplify_object(element_object[element.tag], 1)
 
     return element_object
 
@@ -116,7 +117,7 @@ def dom2object(element, remove_indent=True, strip=True, simplify=True, simplify2
     if simplify:
         element_object[element.tagName] = simplify_element(element_object[element.tagName])
     if simplify2:
-        element_object[element.tagName] = utility.simplify_object(element_object[element.tagName], 0 if simplify else 1)
+        element_object[element.tagName] = utility.simplify_object(element_object[element.tagName], 1)
 
     return element_object
 
