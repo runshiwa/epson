@@ -131,6 +131,7 @@ After writing the cause of death, details of the death should be written in the 
         * line-feed characters (\n) around raw-string are exclusive of raw-string self
 * guard-string
     * characters
+        * characters except comma (',')
 * raw-string
     * raw-characters
 * raw-characters
