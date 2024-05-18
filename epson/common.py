@@ -1,7 +1,7 @@
 import re
 import string
 
-EPSON_STRING = re.compile(r'""(.+)\n(.*\n)*?\1\n')
+EPSON_STRING = re.compile(r'""([^,]+)\n(.*\n)*?\1\n')
 EPSON_STRING_START = '""'
 EPSON_STRING_GUARD = "."
 EPSON_STRING_GUARD_CS = string.ascii_letters + string.digits
